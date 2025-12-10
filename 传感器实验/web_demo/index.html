@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>传感器工具箱 - Web演示版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .sensor-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .sensor-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .sensor-card h3 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 20px;
+        }
+
+        .sensor-card p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .sensor-view {
+            display: none;
+        }
+
+        .sensor-view.active {
+            display: block;
+        }
+
+        .back-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .back-btn:hover {
+            background: #5568d3;
+        }
+
+        .data-display {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .data-item {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+
+        .data-label {
+            font-weight: bold;
+            color: #333;
+            display: inline-block;
+            width: 80px;
+        }
+
+        .data-value {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .shake-indicator {
+            background: #ff5722;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .shake-indicator.active {
+            display: block;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .compass {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            position: relative;
+            border: 8px solid #333;
+            border-radius: 50%;
+            background: #f0f0f0;
+        }
+
+        .compass-needle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 80px;
+            background: #ff0000;
+            transform-origin: top center;
+            transform: translate(-50%, -100%) rotate(0deg);
+            transition: transform 0.3s;
+        }
+
+        .compass-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            background: #333;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .light-meter {
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(to right, #000 0%, #fff 100%);
+            border-radius: 8px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .light-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 50%;
+            background: rgba(255,255,255,0.3);
+            transition: width 0.3s;
+        }
+
+        .status-text {
+            text-align: center;
+            font-size: 18px;
+            color: #ff5722;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 主界面 -->
+        <div id="main-view" class="sensor-view active">
+            <div class="header">
+                <h1>传感器工具箱</h1>
+                <p>Web演示版 - 模拟传感器数据</p>
+            </div>
+            <div class="content">
+                <div class="sensor-card" onclick="showSensor('accelerometer')">
+                    <h3>加速度传感器</h3>
+                    <p>检测加速度、摇一摇功能</p>
+                </div>
+                <div class="sensor-card" onclick="showSensor('compass')">
+                    <h3>指南针</h3>
+                    <p>显示设备方向、指南针</p>
+                </div>
+                <div class="sensor-card" onclick="showSensor('light')">
+                    <h3>光线传感器</h3>
+                    <p>检测环境光线强度</p>
+                </div>
+                <div class="sensor-card" onclick="showSensor('gyroscope')">
+                    <h3>陀螺仪</h3>
+                    <p>检测设备旋转角速度</p>
+                </div>
+                <div class="sensor-card" onclick="showSensor('orientation')">
+                    <h3>方向传感器</h3>
+                    <p>检测设备姿态角度</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 加速度传感器界面 -->
+        <div id="accelerometer-view" class="sensor-view">
+            <div class="header">
+                <h1>加速度传感器</h1>
+            </div>
+            <div class="content">
+                <button class="back-btn" onclick="showMain()">返回主界面</button>
+                <div class="data-display">
+                    <div class="data-item">
+                        <span class="data-label">X轴:</span>
+                        <span class="data-value" id="accel-x">0.00 m/s²</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Y轴:</span>
+                        <span class="data-value" id="accel-y">0.00 m/s²</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Z轴:</span>
+                        <span class="data-value" id="accel-z">0.00 m/s²</span>
+                    </div>
+                </div>
+                <div class="shake-indicator" id="shake-indicator">检测到摇动！</div>
+                <p style="text-align: center; color: #666; margin-top: 20px;">
+                    提示：点击页面任意位置模拟摇动
+                </p>
+            </div>
+        </div>
+
+        <!-- 指南针界面 -->
+        <div id="compass-view" class="sensor-view">
+            <div class="header">
+                <h1>指南针</h1>
+            </div>
+            <div class="content">
+                <button class="back-btn" onclick="showMain()">返回主界面</button>
+                <div class="compass">
+                    <div class="compass-needle" id="compass-needle"></div>
+                    <div class="compass-center"></div>
+                </div>
+                <div class="data-display">
+                    <div class="data-item">
+                        <span class="data-label">方向:</span>
+                        <span class="data-value" id="compass-direction">北 (0°)</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">方位角:</span>
+                        <span class="data-value" id="compass-azimuth">0°</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">磁场强度:</span>
+                        <span class="data-value" id="compass-magnetic">45.00 μT</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 光线传感器界面 -->
+        <div id="light-view" class="sensor-view">
+            <div class="header">
+                <h1>光线传感器</h1>
+            </div>
+            <div class="content">
+                <button class="back-btn" onclick="showMain()">返回主界面</button>
+                <div style="text-align: center; font-size: 72px; font-weight: bold; color: #667eea; margin: 30px 0;" id="light-value">0</div>
+                <div style="text-align: center; color: #666; margin-bottom: 20px;">勒克斯 (Lux)</div>
+                <div class="light-meter">
+                    <div class="light-indicator" id="light-indicator"></div>
+                </div>
+                <div class="status-text" id="light-status">等待检测...</div>
+                <div class="data-display" style="margin-top: 20px;">
+                    <p style="font-size: 14px; color: #666; line-height: 1.8;">
+                        <strong>光线强度参考值：</strong><br>
+                        • 完全黑暗: 0-1 Lux<br>
+                        • 月光: 0.1-1 Lux<br>
+                        • 室内照明: 100-1000 Lux<br>
+                        • 阳光直射: 10000-100000 Lux
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 陀螺仪界面 -->
+        <div id="gyroscope-view" class="sensor-view">
+            <div class="header">
+                <h1>陀螺仪</h1>
+            </div>
+            <div class="content">
+                <button class="back-btn" onclick="showMain()">返回主界面</button>
+                <div class="data-display">
+                    <div class="data-item">
+                        <span class="data-label">X轴:</span>
+                        <span class="data-value" id="gyro-x">0.000 rad/s</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Y轴:</span>
+                        <span class="data-value" id="gyro-y">0.000 rad/s</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Z轴:</span>
+                        <span class="data-value" id="gyro-z">0.000 rad/s</span>
+                    </div>
+                </div>
+                <p style="text-align: center; color: #666; margin-top: 20px;">
+                    陀螺仪用于检测设备绕X、Y、Z轴的旋转角速度
+                </p>
+            </div>
+        </div>
+
+        <!-- 方向传感器界面 -->
+        <div id="orientation-view" class="sensor-view">
+            <div class="header">
+                <h1>方向传感器</h1>
+            </div>
+            <div class="content">
+                <button class="back-btn" onclick="showMain()">返回主界面</button>
+                <div class="data-display">
+                    <div class="data-item">
+                        <span class="data-label">方位角:</span>
+                        <span class="data-value" id="orient-azimuth">0.0°</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">俯仰角:</span>
+                        <span class="data-value" id="orient-pitch">0.0°</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">翻滚角:</span>
+                        <span class="data-value" id="orient-roll">0.0°</span>
+                    </div>
+                </div>
+                <p style="text-align: center; color: #666; margin-top: 20px; font-size: 14px; line-height: 1.8;">
+                    方位角：设备绕Z轴旋转的角度<br>
+                    俯仰角：设备绕X轴旋转的角度<br>
+                    翻滚角：设备绕Y轴旋转的角度
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 显示主界面
+        function showMain() {
+            document.querySelectorAll('.sensor-view').forEach(v => v.classList.remove('active'));
+            document.getElementById('main-view').classList.add('active');
+            stopAllSimulations();
+        }
+
+        // 显示传感器界面
+        function showSensor(sensorName) {
+            document.querySelectorAll('.sensor-view').forEach(v => v.classList.remove('active'));
+            document.getElementById(sensorName + '-view').classList.add('active');
+            startSimulation(sensorName);
+        }
+
+        let intervals = {};
+
+        function stopAllSimulations() {
+            Object.values(intervals).forEach(id => clearInterval(id));
+            intervals = {};
+        }
+
+        function startSimulation(sensorName) {
+            stopAllSimulations();
+            
+            switch(sensorName) {
+                case 'accelerometer':
+                    simulateAccelerometer();
+                    break;
+                case 'compass':
+                    simulateCompass();
+                    break;
+                case 'light':
+                    simulateLight();
+                    break;
+                case 'gyroscope':
+                    simulateGyroscope();
+                    break;
+                case 'orientation':
+                    simulateOrientation();
+                    break;
+            }
+        }
+
+        // 模拟加速度传感器
+        let accelX = 0, accelY = 0, accelZ = 9.8;
+        let lastShakeTime = 0;
+
+        function simulateAccelerometer() {
+            intervals.accelerometer = setInterval(() => {
+                // 模拟重力 + 随机波动
+                accelX = 0 + (Math.random() - 0.5) * 2;
+                accelY = 0 + (Math.random() - 0.5) * 2;
+                accelZ = 9.8 + (Math.random() - 0.5) * 2;
+
+                document.getElementById('accel-x').textContent = accelX.toFixed(2) + ' m/s²';
+                document.getElementById('accel-y').textContent = accelY.toFixed(2) + ' m/s²';
+                document.getElementById('accel-z').textContent = accelZ.toFixed(2) + ' m/s²';
+
+                // 检测摇动
+                let speed = Math.abs(accelX) + Math.abs(accelY) + Math.abs(accelZ - 9.8);
+                if (speed > 3 && Date.now() - lastShakeTime > 1000) {
+                    document.getElementById('shake-indicator').classList.add('active');
+                    setTimeout(() => {
+                        document.getElementById('shake-indicator').classList.remove('active');
+                    }, 500);
+                    lastShakeTime = Date.now();
+                }
+            }, 100);
+
+            // 点击模拟摇动
+            document.getElementById('accelerometer-view').addEventListener('click', function() {
+                accelX = (Math.random() - 0.5) * 20;
+                accelY = (Math.random() - 0.5) * 20;
+                accelZ = 9.8 + (Math.random() - 0.5) * 20;
+                document.getElementById('shake-indicator').classList.add('active');
+                setTimeout(() => {
+                    document.getElementById('shake-indicator').classList.remove('active');
+                }, 500);
+            });
+        }
+
+        // 模拟指南针
+        let compassAngle = 0;
+
+        function simulateCompass() {
+            intervals.compass = setInterval(() => {
+                compassAngle = (compassAngle + 0.5) % 360;
+                document.getElementById('compass-needle').style.transform = 
+                    `translate(-50%, -100%) rotate(${compassAngle}deg)`;
+                
+                let directions = ['北', '东北', '东', '东南', '南', '西南', '西', '西北'];
+                let index = Math.floor((compassAngle + 22.5) / 45) % 8;
+                document.getElementById('compass-direction').textContent = 
+                    directions[index] + ' (' + compassAngle.toFixed(1) + '°)';
+                document.getElementById('compass-azimuth').textContent = compassAngle.toFixed(1) + '°';
+                document.getElementById('compass-magnetic').textContent = 
+                    (45 + Math.random() * 5).toFixed(2) + ' μT';
+            }, 100);
+        }
+
+        // 模拟光线传感器
+        let lightValue = 500;
+
+        function simulateLight() {
+            intervals.light = setInterval(() => {
+                // 模拟光线变化
+                lightValue = 300 + Math.sin(Date.now() / 2000) * 200 + Math.random() * 100;
+                if (lightValue < 0) lightValue = 0;
+
+                document.getElementById('light-value').textContent = lightValue.toFixed(1);
+                
+                // 更新指示器
+                let percentage = Math.min(lightValue / 1000 * 100, 100);
+                document.getElementById('light-indicator').style.width = percentage + '%';
+
+                // 更新状态
+                let status = '';
+                if (lightValue < 1) status = '完全黑暗';
+                else if (lightValue < 10) status = '很暗';
+                else if (lightValue < 100) status = '较暗';
+                else if (lightValue < 1000) status = '室内照明';
+                else if (lightValue < 10000) status = '明亮';
+                else status = '非常明亮（可能为阳光直射）';
+                document.getElementById('light-status').textContent = status;
+            }, 200);
+        }
+
+        // 模拟陀螺仪
+        function simulateGyroscope() {
+            intervals.gyroscope = setInterval(() => {
+                let x = (Math.random() - 0.5) * 0.5;
+                let y = (Math.random() - 0.5) * 0.5;
+                let z = (Math.random() - 0.5) * 0.5;
+
+                document.getElementById('gyro-x').textContent = x.toFixed(3) + ' rad/s';
+                document.getElementById('gyro-y').textContent = y.toFixed(3) + ' rad/s';
+                document.getElementById('gyro-z').textContent = z.toFixed(3) + ' rad/s';
+            }, 100);
+        }
+
+        // 模拟方向传感器
+        let orientAzimuth = 0, orientPitch = 0, orientRoll = 0;
+
+        function simulateOrientation() {
+            intervals.orientation = setInterval(() => {
+                orientAzimuth = (orientAzimuth + 0.3) % 360;
+                orientPitch = Math.sin(Date.now() / 3000) * 30;
+                orientRoll = Math.cos(Date.now() / 2500) * 20;
+
+                document.getElementById('orient-azimuth').textContent = orientAzimuth.toFixed(1) + '°';
+                document.getElementById('orient-pitch').textContent = orientPitch.toFixed(1) + '°';
+                document.getElementById('orient-roll').textContent = orientRoll.toFixed(1) + '°';
+            }, 100);
+        }
+    </script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,66 @@
+Windows直接打包APK - 快速指南
+================================
+
+推荐方法：GitHub Actions（最简单，完全免费）
+--------------------------------------------
+
+步骤1：准备GitHub账号
+--------------------
+1. 访问 https://github.com
+2. 注册/登录账号
+
+步骤2：上传代码到GitHub
+----------------------
+方法A：使用网页上传（最简单）
+1. 在GitHub创建新仓库
+2. 点击"uploading an existing file"
+3. 拖拽整个项目文件夹上传
+4. 提交
+
+方法B：使用Git命令
+1. 在项目目录打开命令行
+2. git init
+3. git add .
+4. git commit -m "Initial commit"
+5. 在GitHub创建仓库
+6. git remote add origin https://github.com/用户名/仓库名.git
+7. git push -u origin main
+
+步骤3：触发构建
+--------------
+1. 代码上传后会自动触发构建
+2. 或访问：https://github.com/用户名/仓库名/actions
+3. 点击"Run workflow"手动触发
+
+步骤4：下载APK
+--------------
+1. 等待构建完成（10-30分钟）
+2. 在Actions页面点击构建任务
+3. 下载Artifacts中的APK文件
+
+步骤5：安装到手机
+----------------
+1. 将APK传输到手机（USB/云盘/微信）
+2. 在手机上打开APK文件
+3. 允许"安装未知来源应用"
+4. 安装完成
+
+其他方法
+--------
+
+方法二：BeeWare Briefcase
+1. pip install briefcase
+2. briefcase new
+3. briefcase create android
+4. briefcase build android
+5. briefcase package android
+
+方法三：Docker（需要安装Docker Desktop）
+1. 安装Docker Desktop
+2. 使用提供的Dockerfile构建
+3. APK在bin目录
+
+详细说明请查看：
+- GitHub Actions使用指南.md
+- Windows直接打包指南.md
+
