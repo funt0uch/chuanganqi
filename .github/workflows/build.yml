@@ -5,12 +5,12 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 60  # 增加超时时间，buildozer构建需要较长时间
+    timeout-minutes: 60
     
     steps:
     - name: Checkout code
@@ -46,10 +46,30 @@ jobs:
         pip install --upgrade pip
         pip install buildozer cython
     
-    - name: Build APK with Buildozer
+    - name: Verify project files
       run: |
+        echo "Current directory: $(pwd)"
+        echo "Listing files:"
+        ls -la
+        echo "Checking for buildozer.spec:"
+        if [ -f buildozer.spec ]; then
+          echo "✓ buildozer.spec found!"
+          cat buildozer.spec | head -5
+        else
+          echo "✗ buildozer.spec not found in current directory"
+          echo "Searching for buildozer.spec:"
+          find . -name "buildozer.spec" -type f 2>/dev/null || echo "Not found anywhere"
+        fi
+        echo "Checking for main.py:"
+        ls -la main.py || echo "main.py not found!"
+    
+    - name: Build APK with Buildozer
+      working-directory: ${{ github.workspace }}
+      run: |
+        pwd
+        ls -la buildozer.spec
         buildozer -v android debug
-      timeout-minutes: 50  # Buildozer步骤单独的超时时间
+      timeout-minutes: 50
     
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
